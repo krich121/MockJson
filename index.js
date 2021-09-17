@@ -26,7 +26,7 @@ con.connect(function(err) {
 
 
 app.get('/', (req, res) => {
-    res.send({testConnection: "Success!!"});
+    res.send({Server: "Started !!"});
 })
 
 app.get('/setconnection', (req, res) => {
@@ -91,16 +91,26 @@ app.get('/setconnection', (req, res) => {
 })
 
 app.get('/getmockdata', (req, res) => {
-    const count = req.query.count
+    const program = req.query.program;
+    const version = req.query.version;
+    const apiname = req.query.apiname;
 
-    if (!count) {
-        return res.status(400).send({errorMsg: 'Parameter is missing'});
+    if (!program) {
+        return res.status(400).send({errorMsg: 'Parameter program is missing'});
+    }
+
+    if (!version) {
+        return res.status(400).send({errorMsg: 'Parameter version is missing'});
+    }
+
+    if (!apiname) {
+        return res.status(400).send({errorMsg: 'Parameter apiname is missing'});
     }
 
     try {
-        var sql = "CALL _sp_get_mock_json();";
+        var sql = "CALL _sp_get_mock_json(?,?,?);";
         //var sql = "SELECT json_value FROM mock_detail LIMIT 1;";
-        con.query(sql, true, function(err, result){
+        con.query(sql, [ program, version, apiname ], function(err, result){
 
             if (err) {
                 console.log("Connected Error!");
@@ -123,11 +133,6 @@ app.get('/getmockdata', (req, res) => {
     }
 })
 
-//app.listen(process.env.PORT || 8080, function(){
-//    console.log("Express server listening on port %d in %s mode", this.address().port, app.settings.env);
-//});
-
 app.listen(PORT, () => {
     console.log(`Server started on port ${PORT}`);
-    //console.log('Server started');
 })
