@@ -1,11 +1,17 @@
 const express = require('express');
 const faker = require('faker');
 const mysql = require('mysql');
+const fs = require('fs');
 const _ = require('lodash');
 const PORT = process.env.PORT || 8080;
 
 const app = express();
 
+//app.get('/readconnection', (req, res) => {
+//    readDBConfig();
+//})
+
+/*
 var con = mysql.createConnection({
     host:"",
     port:"",
@@ -23,7 +29,68 @@ con.connect(function(err) {
         console.log("Connected Success!");
     }
 });
+*/
 
+var db_config = {
+    host: '',
+    port: '',
+    user: '',
+    password: '',
+    database: ''
+};
+  
+var con;
+
+function DBConnect() {
+    fs.readFile('./dbconfig.json', 'utf-8', (err, jsonString) => {
+        if (err) {
+            console.log(err);
+        }
+        else {
+            try {
+                const data = JSON.parse(jsonString);
+                console.log(data);
+
+                db_config.host = data.host;
+                db_config.port = data.port;
+                db_config.user = data.user;
+                db_config.password = data.password;
+                db_config.database = data.database;
+            }
+            catch (e) {
+                console.log('Error Parse JSON');
+            }
+            
+        }
+    })
+}
+
+function handleDisconnect() {
+    con = mysql.createConnection(db_config)
+              
+    con.connect(function(err) {
+        if(err) {
+            console.log('error when connecting to db:', err);
+            setTimeout(handleDisconnect, 5000);
+        }
+        else {
+            console.log("Connected Success!");
+        }
+    });
+
+    con.on('error', function(err) {
+        console.log('db error', err);
+        if(err.code === 'PROTOCOL_CONNECTION_LOST') {
+            handleDisconnect();
+        } 
+        else {
+            throw err;
+        }
+    });
+}
+  
+DBConnect();
+handleDisconnect();
 
 app.get('/', (req, res) => {
     res.send({Server: "Started !!"});
@@ -65,6 +132,8 @@ app.get('/setconnection', (req, res) => {
     }
 
     try {
+
+        /*
         con = mysql.createConnection({
             host: _host,
             port: _port,
@@ -84,6 +153,28 @@ app.get('/setconnection', (req, res) => {
                 res.send({setConnection: "Success!!"});
             }
         }); 
+
+        */
+
+        db_config = {
+            host: _host,
+            port: _port,
+            user: _user,
+            password: _password,
+            database: _database
+        };
+
+        const jsonString = JSON.stringify(db_config);
+        fs.writeFile('./dbconfig.json', jsonString, (err) => {
+            if (err) {
+                console.log(err);
+            }
+            else {
+                console.log('DB Config write success');
+            }
+        });
+
+        handleDisconnect();
     }
     catch (e) {
         res.send({setConnection: "Error!!"});
