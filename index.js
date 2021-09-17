@@ -31,6 +31,7 @@ con.connect(function(err) {
 });
 */
 
+const dbMode = process.env.DB_MODE || 'local';
 const dbHost = process.env.DB_HOST || '';
 const dbPort = process.env.DB_PORT || '';
 const dbUser = process.env.DB_USER || '';
@@ -38,37 +39,53 @@ const dbPassword = process.env.DB_PASSWORD || '';
 const dbName = process.env.DB_NAME || '';
 
 var db_config = {
-    host: dbHost,
-    port: dbPort,
-    user: dbUser,
-    password: dbPassword,
-    database: dbName
+    host: '',
+    port: '',
+    user: '',
+    password: '',
+    database: ''
 };
   
 var con;
 
-function DBConnect() {
-    fs.readFile('./dbconfig.json', 'utf-8', (err, jsonString) => {
-        if (err) {
-            console.log(err);
-        }
-        else {
-            try {
-                const data = JSON.parse(jsonString);
-                console.log(data);
+function setDBConfig() {
 
-                db_config.host = data.host;
-                db_config.port = data.port;
-                db_config.user = data.user;
-                db_config.password = data.password;
-                db_config.database = data.database;
+    if (dbMode == 'HEROKU') {
+        db_config = {
+            host: dbHost,
+            port: dbPort,
+            user: dbUser,
+            password: dbPassword,
+            database: dbName
+        };
+
+        console.log('Set DB Config from HEROKU Success !!');
+    }
+    else if (dbMode == 'local') {
+        fs.readFile('./dbconfig.json', 'utf-8', (err, jsonString) => {
+            if (err) {
+                console.log(err);
             }
-            catch (e) {
-                console.log('Error Parse JSON');
+            else {
+                try {
+                    const data = JSON.parse(jsonString);
+                    console.log(data);
+
+                    db_config.host = data.host;
+                    db_config.port = data.port;
+                    db_config.user = data.user;
+                    db_config.password = data.password;
+                    db_config.database = data.database;
+
+                    console.log('Set DB Config from ConfigFile Success !!');
+                }
+                catch (e) {
+                    console.log('Error Parse JSON');
+                }
+                
             }
-            
-        }
-    })
+        })
+    }
 }
 
 function handleDisconnect() {
@@ -95,17 +112,13 @@ function handleDisconnect() {
     });
 }
   
-//DBConnect();
+setDBConfig();
 handleDisconnect();
 
 app.get('/', (req, res) => {
     res.send({Server: "Started !!"});
 })
 
-app.get('/reconnection', (req, res) => {
-    handleDisconnect()
-    res.send({reConnection: "Success !!"});
-})
 
 app.get('/setconnection', (req, res) => {
     const _host = req.query.host;
