@@ -24,7 +24,8 @@ con.connect(function(err) {
     }
 });
 
-app.get('/test', (req, res) => {
+
+app.get('/', (req, res) => {
     res.send({testConnection: "Success!!"});
 })
 
@@ -123,5 +124,6 @@ app.get('/getmockdata', (req, res) => {
 })
 
 app.listen(PORT, () => {
-    console.log(`Server started on port ${PORT}`);
+    //console.log(`Server started on port ${PORT}`);
+    console.log('Server started');
 })
