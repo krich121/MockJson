@@ -31,12 +31,18 @@ con.connect(function(err) {
 });
 */
 
+const dbHost = process.env.DB_HOST || '';
+const dbPort = process.env.DB_PORT || '';
+const dbUser = process.env.DB_USER || '';
+const dbPassword = process.env.DB_PASSWORD || '';
+const dbName = process.env.DB_NAME || '';
+
 var db_config = {
-    host: '',
-    port: '',
-    user: '',
-    password: '',
-    database: ''
+    host: dbHost,
+    port: dbPort,
+    user: dbUser,
+    password: dbPassword,
+    database: dbName
 };
   
 var con;
@@ -89,11 +95,16 @@ function handleDisconnect() {
     });
 }
   
-DBConnect();
+//DBConnect();
 handleDisconnect();
 
 app.get('/', (req, res) => {
     res.send({Server: "Started !!"});
+})
+
+app.get('/reconnection', (req, res) => {
+    handleDisconnect()
+    res.send({reConnection: "Success !!"});
 })
 
 app.get('/setconnection', (req, res) => {
