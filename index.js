@@ -2,6 +2,7 @@ const express = require('express');
 const faker = require('faker');
 const mysql = require('mysql');
 const _ = require('lodash');
+const PORT = process.env.port || 8080;
 
 const app = express();
 
@@ -121,6 +122,6 @@ app.get('/getmockdata', (req, res) => {
     }
 })
 
-app.listen(3030, () => {
-    console.log('Server started on port 3030');
+app.listen(PORT, () => {
+    console.log(`Server started on port ${PORT}`);
 })
